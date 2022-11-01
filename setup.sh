@@ -4,7 +4,12 @@ set -a
 # All the variables for the deployment
 subscription_name="AzureDev"
 resource_group_name="rg-azure-iot-edge"
-location="swedencentral"
+location="northeurope"
+
+iot_hub_name="iot-demo000000010"
+iot_hub_sku="S1"
+
+edge_device_id="edge1"
 
 vnet_name="vnet-myakstcp"
 subnet_vm_name="snet-vm"
@@ -22,6 +27,18 @@ az account set --subscription $subscription_name -o table
 
 # Create resource group
 az group create -l $location -n $resource_group_name -o table
+
+iot_hub_json=$(az iot hub create --resource-group $resource_group_name --name $iot_hub_name --sku $iot_hub_sku --partition-count 2 -o json)
+echo $iot_hub_json
+
+device_identity_json=$(az iot hub device-identity create --device-id $edge_device_id --edge-enabled --hub-name $iot_hub_name -o json)
+echo $device_identity_json
+
+device_identity_connection_string_json=$(az iot hub device-identity connection-string show --device-id $edge_device_id --hub-name $iot_hub_name -o json)
+echo $device_identity_connection_string_json
+
+device_identity_connection_string=$(echo $device_identity_connection_string_json | jq -r .connectionString)
+echo $device_identity_connection_string
 
 az network nsg create \
   --resource-group $resource_group_name \
@@ -58,7 +75,6 @@ vm_json=$(az vm create \
   --size Standard_DS3_v2 \
   --admin-username $vm_username \
   --admin-password $vm_password)
-
 
 vm_public_ip_address=$(echo $vm_json | jq -r .publicIpAddress)
 echo $vm_public_ip_address
