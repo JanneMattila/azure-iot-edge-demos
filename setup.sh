@@ -40,6 +40,9 @@ echo $device_identity_connection_string_json
 device_identity_connection_string=$(echo $device_identity_connection_string_json | jq -r .connectionString)
 echo $device_identity_connection_string
 
+az iot hub device-identity list --hub-name $iot_hub_name
+az iot hub device-identity list --hub-name $iot_hub_name -o table
+
 az network nsg create \
   --resource-group $resource_group_name \
   --name $nsg_name
@@ -84,10 +87,8 @@ echo $vm_public_ip_address
 set -a
 echo vm_username=$vm_username
 echo vm_password=$vm_password
-echo stats_server_address=$stats_server_address
 echo vm_public_ip_address=$vm_public_ip_address
-echo vm_private_ip_address=$vm_private_ip_address
-echo lb_public_ip_address=$lb_public_ip_address
+echo device_identity_connection_string=$device_identity_connection_string
 
 ssh $vm_username@$vm_public_ip_address
 ssh $vm_username@$lb_public_ip_address
@@ -97,11 +98,48 @@ sshpass -p $vm_password ssh $vm_username@$vm_public_ip_address
 sshpass -p $vm_password ssh $vm_username@$lb_public_ip_address
 
 # Setup VM
-sudo apt update
-sudo apt install docker.io -y
+wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+
+sudo apt-get update
+sudo apt-get install moby-engine -y
+# sudo apt-get install docker.io -y
+
+# https://learn.microsoft.com/en-us/azure/iot-edge/how-to-provision-single-device-linux-symmetric?view=iotedge-1.4&tabs=azure-cli%2Cubuntu
+sudo apt-get install aziot-edge defender-iot-micro-agent-edge
+
+sudo iotedge config mp --connection-string $device_identity_connection_string
+
+sudo iotedge config apply
+
+sudo cat /etc/aziot/config.toml
+
+sudo iotedge system status
+
+sudo iotedge system logs
+sudo iotedge system logs -- -f
+
+# Switch to debug logging
+sudo iotedge system set-log-level debug
+sudo iotedge system restart
+
+# Switch to normal logging
+sudo iotedge system set-log-level info
+sudo iotedge system restart
+
+sudo iotedge check
+
+sudo iotedge list
+
+sudo iotedge support-bundle --since 6h
+
 
 # Exit VM
 exit
+
+# Firewall
+# https://learn.microsoft.com/en-us/azure/iot-edge/troubleshoot?view=iotedge-1.4#check-your-firewall-and-port-configuration-rules
 
 # Wipe out the resources
 az group delete --name $resource_group_name -y
