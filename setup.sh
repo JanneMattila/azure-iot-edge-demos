@@ -20,6 +20,7 @@ vm_password=$(openssl rand -base64 32)
 
 nsg_name="nsg-vm"
 nsg_rule_ssh_name="ssh-rule"
+nsg_rule_deny_name="deny-rule"
 
 # Prepare extensions and providers
 az extension add --upgrade --yes --name azure-iot
@@ -72,7 +73,7 @@ echo $vnet_id
 
 subnet_vm_id=$(az network vnet subnet create -g $resource_group_name --vnet-name $vnet_name \
   --name $subnet_vm_name --address-prefixes 10.4.0.0/24 \
-  --nsg-name $nsg_name \
+  --network-security-group $nsg_name \
   --query id -o tsv)
 echo $subnet_vm_id
 
@@ -150,14 +151,38 @@ sudo iotedge list
 
 sudo iotedge support-bundle --since 6h
 
+sudo docker logs SimulatedTemperatureSensor
+sudo docker logs edgeAgent
+sudo docker logs edgeHub
 
 # Exit VM
 exit
 
 # Firewall
 # https://learn.microsoft.com/en-us/azure/iot-edge/troubleshoot?view=iotedge-1.4#check-your-firewall-and-port-configuration-rules
+# https://learn.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-protocols
 
+# Disconnect solution
+az network nsg rule create \
+  --resource-group $resource_group_name \
+  --nsg-name $nsg_name \
+  --name $nsg_rule_deny_name \
+  --protocol '*' \
+  --direction outbound \
+  --source-address-prefix '*' \
+  --source-port-range '*' \
+  --destination-address-prefix '*' \
+  --destination-port-range '400-10000' \
+  --access deny \
+  --priority 200
 
+# Remove network security rule -> Resolve the connection
+az network nsg rule delete \
+  --resource-group $resource_group_name \
+  --nsg-name $nsg_name \
+  --name $nsg_rule_deny_name
+
+# Misc
 az iot hub module-identity list --device-id $edge_device_id --hub-name $iot_hub_name
 
 # Wipe out the resources
