@@ -11,7 +11,7 @@ iot_hub_sku="S1"
 
 edge_device_id="edge1"
 
-vnet_name="vnet-myakstcp"
+vnet_name="vnet-iot"
 subnet_vm_name="snet-vm"
 
 vm_name="vm"
@@ -20,6 +20,9 @@ vm_password=$(openssl rand -base64 32)
 
 nsg_name="nsg-vm"
 nsg_rule_ssh_name="ssh-rule"
+
+# Prepare extensions and providers
+az extension add --upgrade --yes --name azure-iot
 
 # Login and set correct context
 az login -o table
@@ -42,6 +45,8 @@ echo $device_identity_connection_string
 
 az iot hub device-identity list --hub-name $iot_hub_name
 az iot hub device-identity list --hub-name $iot_hub_name -o table
+
+az iot edge set-modules --device-id $edge_device_id --hub-name $iot_hub_name --content deployment.template.json
 
 az network nsg create \
   --resource-group $resource_group_name \
@@ -71,13 +76,25 @@ subnet_vm_id=$(az network vnet subnet create -g $resource_group_name --vnet-name
   --query id -o tsv)
 echo $subnet_vm_id
 
+# Use cloud init file from:
+curl -s https://raw.githubusercontent.com/Azure/iotedge-vm-deploy/1.4/cloud-init.txt > cloud-init.txt
+cat cloud-init.txt
+
+awk "{sub(/{{{dcs}}}/,\"$device_identity_connection_string\"); print}" cloud-init.txt > cloud-init-updated.txt
+cat cloud-init-updated.txt
+
 vm_json=$(az vm create \
   --resource-group $resource_group_name  \
   --name $vm_name \
-  --image UbuntuLTS \
+  --image "Canonical:0001-com-ubuntu-server-focal:20_04-lts:latest" \
   --size Standard_DS3_v2 \
   --admin-username $vm_username \
-  --admin-password $vm_password)
+  --admin-password $vm_password \
+  --custom-data cloud-init-updated.txt \
+  --subnet $subnet_vm_id \
+  --nsg "" \
+  --public-ip-sku Standard \
+  -o json)
 
 vm_public_ip_address=$(echo $vm_json | jq -r .publicIpAddress)
 echo $vm_public_ip_address
@@ -91,13 +108,11 @@ echo vm_public_ip_address=$vm_public_ip_address
 echo device_identity_connection_string=$device_identity_connection_string
 
 ssh $vm_username@$vm_public_ip_address
-ssh $vm_username@$lb_public_ip_address
 
 # Or using sshpass
 sshpass -p $vm_password ssh $vm_username@$vm_public_ip_address
-sshpass -p $vm_password ssh $vm_username@$lb_public_ip_address
 
-# Setup VM
+# Setup VM (if not using cloud-init)-->
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
@@ -112,6 +127,7 @@ sudo apt-get install aziot-edge defender-iot-micro-agent-edge
 sudo iotedge config mp --connection-string $device_identity_connection_string
 
 sudo iotedge config apply
+# <--Setup VM (if not using cloud-init)
 
 sudo cat /etc/aziot/config.toml
 
@@ -140,6 +156,9 @@ exit
 
 # Firewall
 # https://learn.microsoft.com/en-us/azure/iot-edge/troubleshoot?view=iotedge-1.4#check-your-firewall-and-port-configuration-rules
+
+
+az iot hub module-identity list --device-id $edge_device_id --hub-name $iot_hub_name
 
 # Wipe out the resources
 az group delete --name $resource_group_name -y

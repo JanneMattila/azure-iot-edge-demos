@@ -14,7 +14,8 @@
 			"mads-hartmann.bash-ide-vscode",
 			"takumii.markdowntable",
 			"lunuan.kubernetes-templates",
-			"jannemattila.send-snippet-to-terminal"
+			"jannemattila.send-snippet-to-terminal",
+			"vsciot-vscode.azure-iot-tools"
 		]
 	}
 }
