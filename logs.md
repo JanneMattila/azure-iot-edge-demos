@@ -475,3 +475,7 @@ System.TimeoutException: The operation timed out.
 <7> 2022-11-04 13:01:01.601 +00:00 [DBG] [Microsoft.Azure.Devices.Edge.Hub.CloudProxy.CloudProxy] - Sending message for edge1/SimulatedTemperatureSensor
 <7> 2022-11-04 13:01:11.629 +00:00 [DBG] [Microsoft.Azure.Devices.Edge.Hub.CloudProxy.CloudProxy] - Sending message for edge1/SimulatedTemperatureSensor
 ```
+
+Reference to the DBG output 
+[here](https://github.com/Azure/iotedge/blob/main/edge-hub/core/src/Microsoft.Azure.Devices.Edge.Hub.CloudProxy/CloudProxy.cs#L159-L160) and 
+["Sending message for "](https://github.com/Azure/iotedge/blob/main/edge-hub/core/src/Microsoft.Azure.Devices.Edge.Hub.CloudProxy/CloudProxy.cs#L637).
