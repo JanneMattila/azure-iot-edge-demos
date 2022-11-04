@@ -54,6 +54,9 @@ az network nsg create \
   --resource-group $resource_group_name \
   --name $nsg_name
 
+my_ip=$(curl --no-progress-meter https://api.ipify.org)
+echo $my_ip
+
 az network nsg rule create \
   --resource-group $resource_group_name \
   --nsg-name $nsg_name \
@@ -62,26 +65,23 @@ az network nsg rule create \
   --direction inbound \
   --source-address-prefix '*' \
   --source-port-range '*' \
-  --destination-address-prefix '*' \
+  --destination-address-prefix $my_ip \
   --destination-port-range 22 \
   --access allow \
   --priority 100
 
-my_ip=$(curl --no-progress-meter https://api.ipify.org)
-echo $my_ip
-
-az network nsg rule create \
-  --resource-group $resource_group_name \
-  --nsg-name $nsg_name \
-  --name $nsg_rule_myip_name \
-  --protocol '*' \
-  --direction outbound \
-  --source-address-prefix '*' \
-  --source-port-range '*' \
-  --destination-address-prefix $my_ip \
-  --destination-port-range '*' \
-  --access allow \
-  --priority 100
+# az network nsg rule create \
+#   --resource-group $resource_group_name \
+#   --nsg-name $nsg_name \
+#   --name $nsg_rule_myip_name \
+#   --protocol '*' \
+#   --direction outbound \
+#   --source-address-prefix '*' \
+#   --source-port-range '*' \
+#   --destination-address-prefix $my_ip \
+#   --destination-port-range '*' \
+#   --access allow \
+#   --priority 100
 
 vnet_id=$(az network vnet create -g $resource_group_name --name $vnet_name \
   --address-prefix 10.0.0.0/8 \
@@ -181,12 +181,21 @@ sudo docker logs edgeAgent
 sudo docker logs edgeHub
 
 sudo docker logs edgeHub | grep Sending
-sudo docker logs edgeHub | grep upstream
+sudo docker logs edgeHub | grep upstream -A 3 -B 3
+sudo docker logs edgeHub | grep upstream -A 3 -B 3 | grep CloudEndpoint
+
+sudo docker logs edgeHub | grep "Sending message for "
+sudo docker logs edgeHub | grep "Error sending message batch for "
 
 # WARNING: These are restart commands!
 sudo iotedge restart SimulatedTemperatureSensor
 sudo iotedge restart edgeAgent
 sudo iotedge restart edgeHub
+
+sudo ls -lF /var/lib/docker/overlay2
+sudo bash
+cd /var/lib/docker/overlay2
+ls -lF
 
 # Exit VM
 exit
