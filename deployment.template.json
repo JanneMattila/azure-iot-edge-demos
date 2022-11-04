@@ -36,6 +36,9 @@
               "env": {
                 "RuntimeLogLevel": {
                   "value": "debug"
+                },
+                "MaxUpstreamBatchSize": {
+                  "value": 100
                 }
               }
             }

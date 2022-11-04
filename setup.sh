@@ -180,6 +180,9 @@ sudo docker logs SimulatedTemperatureSensor
 sudo docker logs edgeAgent
 sudo docker logs edgeHub
 
+sudo docker logs edgeHub | grep Sending
+sudo docker logs edgeHub | grep upstream
+
 # WARNING: These are restart commands!
 sudo iotedge restart SimulatedTemperatureSensor
 sudo iotedge restart edgeAgent
