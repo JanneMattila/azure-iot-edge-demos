@@ -20,6 +20,7 @@ vm_password=$(openssl rand -base64 32)
 
 nsg_name="nsg-vm"
 nsg_rule_ssh_name="ssh-rule"
+nsg_rule_myip_name="myip-rule"
 nsg_rule_deny_name="deny-rule"
 
 # Prepare extensions and providers
@@ -66,6 +67,22 @@ az network nsg rule create \
   --access allow \
   --priority 100
 
+my_ip=$(curl --no-progress-meter https://api.ipify.org)
+echo $my_ip
+
+az network nsg rule create \
+  --resource-group $resource_group_name \
+  --nsg-name $nsg_name \
+  --name $nsg_rule_myip_name \
+  --protocol '*' \
+  --direction outbound \
+  --source-address-prefix '*' \
+  --source-port-range '*' \
+  --destination-address-prefix $my_ip \
+  --destination-port-range '*' \
+  --access allow \
+  --priority 100
+
 vnet_id=$(az network vnet create -g $resource_group_name --name $vnet_name \
   --address-prefix 10.0.0.0/8 \
   --query newVNet.id -o tsv)
@@ -93,6 +110,7 @@ vm_json=$(az vm create \
   --admin-password $vm_password \
   --custom-data cloud-init-updated.txt \
   --subnet $subnet_vm_id \
+  --accelerated-networking true \
   --nsg "" \
   --public-ip-sku Standard \
   -o json)
@@ -137,6 +155,8 @@ sudo iotedge system status
 sudo iotedge system logs
 sudo iotedge system logs -- -f
 
+sudo iotedge system logs | grep Sending
+
 # Switch to debug logging
 sudo iotedge system set-log-level debug
 sudo iotedge system restart
@@ -145,15 +165,25 @@ sudo iotedge system restart
 sudo iotedge system set-log-level info
 sudo iotedge system restart
 
+sudo iotedge logs edgeAgent
+sudo iotedge logs edgeHub
+
 sudo iotedge check
 
 sudo iotedge list
 
 sudo iotedge support-bundle --since 6h
 
+sudo docker ps -a
+
 sudo docker logs SimulatedTemperatureSensor
 sudo docker logs edgeAgent
 sudo docker logs edgeHub
+
+# WARNING: These are restart commands!
+sudo iotedge restart SimulatedTemperatureSensor
+sudo iotedge restart edgeAgent
+sudo iotedge restart edgeHub
 
 # Exit VM
 exit
@@ -172,7 +202,7 @@ az network nsg rule create \
   --source-address-prefix '*' \
   --source-port-range '*' \
   --destination-address-prefix '*' \
-  --destination-port-range '400-10000' \
+  --destination-port-range '*' \
   --access deny \
   --priority 200
 
@@ -184,6 +214,7 @@ az network nsg rule delete \
 
 # Misc
 az iot hub module-identity list --device-id $edge_device_id --hub-name $iot_hub_name
+az iot hub module-twin show --device-id $edge_device_id --module-id '$edgeAgent' --hub-name $iot_hub_name
 
 # Wipe out the resources
 az group delete --name $resource_group_name -y
