@@ -205,26 +205,33 @@ sudo docker logs edgeHub | grep "Operation SendEventAsync"
 sudo docker logs edgeHub | grep "Operation SendEventBatchAsync"
 sudo docker logs edgeHub | grep "Operation SendEventBatchAsync" -A 3 -B 3
 
-# WARNING: These are restart commands!
-sudo iotedge restart SimulatedTemperatureSensor
-sudo iotedge restart edgeAgent
-sudo iotedge restart edgeHub
-
 # If using /iotedge
 ls /iotedge
-sudo ls /iotedge/edgeagent/edgeAgent
-sudo ls /iotedge/edgehub/edgeHub
+sudo ls -lF /iotedge/edgeagent/edgeAgent
+sudo ls -lF /iotedge/edgehub/edgeHub
 
 sudo du -h  /iotedge/edgeagent/edgeAgent
 sudo du -h  /iotedge/edgehub/edgeHub
 
 df -h
 
+sudo docker ps
+
+curl --insecure https://localhost/
+
+# Edgehub metrics
+curl http://localhost:9601/metrics
+
 # If using docker default overlay
 sudo ls -lF /var/lib/docker/overlay2
 sudo bash
 cd /var/lib/docker/overlay2
 ls -lF
+
+# WARNING: These are restart commands!
+sudo iotedge restart SimulatedTemperatureSensor
+sudo iotedge restart edgeAgent
+sudo iotedge restart edgeHub
 
 # Exit VM
 exit
