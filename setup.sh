@@ -5,6 +5,7 @@ set -a
 subscription_name="AzureDev"
 resource_group_name="rg-azure-iot-edge"
 location="northeurope"
+workspace_name="log-iot"
 
 iot_hub_name="iot-demo000000010"
 iot_hub_sku="S1"
@@ -17,6 +18,7 @@ subnet_vm_name="snet-vm"
 vm_name="vm"
 vm_username="azureuser"
 vm_password=$(openssl rand -base64 32)
+echo "vm_password=$vm_password" > .env
 
 nsg_name="nsg-vm"
 nsg_rule_ssh_name="ssh-rule"
@@ -33,8 +35,17 @@ az account set --subscription $subscription_name -o table
 # Create resource group
 az group create -l $location -n $resource_group_name -o table
 
+workspace_json=$(az monitor log-analytics workspace create -g $resource_group_name -n $workspace_name -o json)
+workspace_id=$(echo $workspace_json | jq -r .customerId)
+workspace_key=$(az monitor log-analytics workspace get-shared-keys --resource-group $resource_group_name --workspace-name $workspace_name --query primarySharedKey -o tsv)
+echo $workspace_json
+echo $workspace_id
+echo $workspace_key
+
 iot_hub_json=$(az iot hub create --resource-group $resource_group_name --name $iot_hub_name --sku $iot_hub_sku --partition-count 2 -o json)
+iot_hub_id=$(echo $iot_hub_json | jq -r .id)
 echo $iot_hub_json
+echo $iot_hub_id
 
 device_identity_json=$(az iot hub device-identity create --device-id $edge_device_id --edge-enabled --hub-name $iot_hub_name -o json)
 echo $device_identity_json
@@ -48,7 +59,8 @@ echo $device_identity_connection_string
 az iot hub device-identity list --hub-name $iot_hub_name
 az iot hub device-identity list --hub-name $iot_hub_name -o table
 
-az iot edge set-modules --device-id $edge_device_id --hub-name $iot_hub_name --content deployment.template.json
+cat deployment.template.json | envsubst '$iot_hub_id,$workspace_id,$workspace_key'  > deployment.output.json
+az iot edge set-modules --device-id $edge_device_id --hub-name $iot_hub_name --content deployment.output.json
 
 az network nsg create \
   --resource-group $resource_group_name \
@@ -63,25 +75,25 @@ az network nsg rule create \
   --name $nsg_rule_ssh_name \
   --protocol '*' \
   --direction inbound \
-  --source-address-prefix '*' \
+  --source-address-prefix $my_ip \
   --source-port-range '*' \
-  --destination-address-prefix $my_ip \
-  --destination-port-range 22 \
+  --destination-address-prefix '*' \
+  --destination-port-range '22' \
   --access allow \
   --priority 100
 
-# az network nsg rule create \
-#   --resource-group $resource_group_name \
-#   --nsg-name $nsg_name \
-#   --name $nsg_rule_myip_name \
-#   --protocol '*' \
-#   --direction outbound \
-#   --source-address-prefix '*' \
-#   --source-port-range '*' \
-#   --destination-address-prefix $my_ip \
-#   --destination-port-range '*' \
-#   --access allow \
-#   --priority 100
+az network nsg rule create \
+  --resource-group $resource_group_name \
+  --nsg-name $nsg_name \
+  --name $nsg_rule_myip_name \
+  --protocol '*' \
+  --direction outbound \
+  --source-address-prefix '*' \
+  --source-port-range '*' \
+  --destination-address-prefix $my_ip \
+  --destination-port-range '*' \
+  --access allow \
+  --priority 100
 
 vnet_id=$(az network vnet create -g $resource_group_name --name $vnet_name \
   --address-prefix 10.0.0.0/8 \
@@ -97,8 +109,9 @@ echo $subnet_vm_id
 # Use cloud init file from:
 curl -s https://raw.githubusercontent.com/Azure/iotedge-vm-deploy/1.4/cloud-init.txt > cloud-init.txt
 cat cloud-init.txt
-
 awk "{sub(/{{{dcs}}}/,\"$device_identity_connection_string\"); print}" cloud-init.txt > cloud-init-updated.txt
+echo "  - mkdir -p /iotedge/edgeagent" >> cloud-init-updated.txt
+echo "  - mkdir -p /iotedge/edgehub" >> cloud-init-updated.txt
 cat cloud-init-updated.txt
 
 vm_json=$(az vm create \
@@ -184,8 +197,13 @@ sudo docker logs edgeHub | grep Sending
 sudo docker logs edgeHub | grep upstream -A 3 -B 3
 sudo docker logs edgeHub | grep upstream -A 3 -B 3 | grep CloudEndpoint
 
-sudo docker logs edgeHub | grep "Sending message for "
+sudo docker logs edgeHub | grep "CloudProxy]"
+sudo docker logs edgeHub | grep "Sending message for " -A 3 -B 3
 sudo docker logs edgeHub | grep "Error sending message batch for "
+
+sudo docker logs edgeHub | grep "Operation SendEventAsync"
+sudo docker logs edgeHub | grep "Operation SendEventBatchAsync"
+sudo docker logs edgeHub | grep "Operation SendEventBatchAsync" -A 3 -B 3
 
 # WARNING: These are restart commands!
 sudo iotedge restart SimulatedTemperatureSensor

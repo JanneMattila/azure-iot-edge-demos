@@ -17,11 +17,14 @@
               "type": "docker",
               "settings": {
                 "image": "mcr.microsoft.com/azureiotedge-agent:1.4.2",
-                "createOptions": "{}"
+                "createOptions": "{\"HostConfig\":{\"Binds\":[\"/iotedge/edgeagent:/tmp/edgeagent\"]}}"
               },
               "env": {
                 "RuntimeLogLevel": {
-                  "value": "info"
+                  "value": "debug"
+                },
+                "storageFolder": {
+                  "value": "/tmp/edgeagent"
                 }
               }
             },
@@ -31,7 +34,7 @@
               "restartPolicy": "always",
               "settings": {
                 "image": "mcr.microsoft.com/azureiotedge-hub:1.4.2",
-                "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"5671/tcp\":[{\"HostPort\":\"5671\"}],\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
+                "createOptions": "{\"HostConfig\":{\"Binds\":[\"/iotedge/edgehub:/tmp/edgehub\"],\"PortBindings\":{\"5671/tcp\":[{\"HostPort\":\"5671\"}],\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
               },
               "env": {
                 "RuntimeLogLevel": {
@@ -39,6 +42,9 @@
                 },
                 "MaxUpstreamBatchSize": {
                   "value": 100
+                },
+                "storageFolder": {
+                  "value": "/tmp/edgehub"
                 }
               }
             }
@@ -56,6 +62,33 @@
               "env": {
                 "MessageCount": {
                   "value": "500"
+                }
+              }
+            },
+            "metricsCollector": {
+              "version": "1.0",
+              "type": "docker",
+              "status": "running",
+              "restartPolicy": "always",
+              "settings": {
+                "image": "mcr.microsoft.com/azureiotedge-metrics-collector:latest",
+                "createOptions": "{}"
+              },
+              "env": {
+                "ResourceId": {
+                  "value": "$iot_hub_id"
+                },
+                "UploadTarget": {
+                  "value": "AzureMonitor"
+                },
+                "LogAnalyticsWorkspaceId": {
+                  "value": "$workspace_id"
+                },
+                "LogAnalyticsSharedKey": {
+                  "value": "$workspace_key"
+                },
+                "ScrapeFrequencyInSecs": {
+                  "value": 30
                 }
               }
             }

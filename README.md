@@ -21,3 +21,7 @@ Azure IoT Edge demos
 [Microsoft Artifact Registry](https://mcr.microsoft.com/)
 
 [iotedge-vm-deploy](https://github.com/Azure/iotedge-vm-deploy/tree/1.4)
+
+[Understand system properties](https://learn.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-construct#system-properties-of-d2c-iot-hub-messages)
+
+[Metrics collector module](https://learn.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-1.4&tabs=iothub#metrics-collector-module)
