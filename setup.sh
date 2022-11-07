@@ -221,8 +221,9 @@ curl --insecure https://localhost/
 
 # Edgehub metrics
 curl -s http://localhost:9601/metrics
-curl -s http://localhost:9601/metrics | grep edgehub_message_size_bytes_count
-curl -s http://localhost:9601/metrics | grep edgehub_queue_length
+curl -s http://localhost:9601/metrics | grep edgehub_message_size_bytes_sum | cut -d " " -f2-
+curl -s http://localhost:9601/metrics | grep edgehub_message_size_bytes_count | cut -d " " -f2-
+curl -s http://localhost:9601/metrics | grep edgehub_queue_length | tail -n 1 | cut -d " " -f2-
 
 # If using docker default overlay
 sudo ls -lF /var/lib/docker/overlay2
