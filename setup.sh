@@ -210,6 +210,17 @@ sudo iotedge restart SimulatedTemperatureSensor
 sudo iotedge restart edgeAgent
 sudo iotedge restart edgeHub
 
+# If using /iotedge
+ls /iotedge
+sudo ls /iotedge/edgeagent/edgeAgent
+sudo ls /iotedge/edgehub/edgeHub
+
+sudo du -h  /iotedge/edgeagent/edgeAgent
+sudo du -h  /iotedge/edgehub/edgeHub
+
+df -h
+
+# If using docker default overlay
 sudo ls -lF /var/lib/docker/overlay2
 sudo bash
 cd /var/lib/docker/overlay2
