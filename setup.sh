@@ -220,7 +220,9 @@ sudo docker ps
 curl --insecure https://localhost/
 
 # Edgehub metrics
-curl http://localhost:9601/metrics
+curl -s http://localhost:9601/metrics
+curl -s http://localhost:9601/metrics | grep edgehub_message_size_bytes_count
+curl -s http://localhost:9601/metrics | grep edgehub_queue_length
 
 # If using docker default overlay
 sudo ls -lF /var/lib/docker/overlay2
