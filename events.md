@@ -8,7 +8,7 @@
 
 - `iothub-enqueuedtime`
 
-Example batch event:
+Example `DeviceTelemetry` batch event:
 
 ```json
 [
@@ -150,6 +150,45 @@ Example batch event:
         },
         "timeCreated" : "2022-11-04T04:55:13.0595629Z"
       }
+    }
+  }
+]
+```
+
+Example `DeviceDisconnected` event:
+
+```json
+[
+  {
+    "id": "289a1c2b-f8b7-c06e-7f29-2aec1f0ad80a",
+    "source": "/SUBSCRIPTIONS/ee932f8a-a75a-4115-b95f-2896ce3e3517/RESOURCEGROUPS/RG-AZURE-IOT-EDGE/PROVIDERS/MICROSOFT.DEVICES/IOTHUBS/IOT-DEMO",
+    "specversion": "1.0",
+    "type": "Microsoft.Devices.DeviceDisconnected",
+    "subject": "devices/edge1/$edgeHub",
+    "time": "2022-11-07T09:47:11.4366356Z",
+    "data": {
+      "deviceConnectionStateEventInfo": {
+        "sequenceNumber": "000000000000000001D8F268B5BC335E0000000200000000000000000000003A"
+      },
+      "hubName": "iot-demo000000010",
+      "deviceId": "edge1",
+      "moduleId": "$edgeHub"
+    }
+  },
+  {
+    "id": "da91f900-fa38-2996-3565-5de8755b7580",
+    "source": "/SUBSCRIPTIONS/ee932f8a-a75a-4115-b95f-2896ce3e3517/RESOURCEGROUPS/RG-AZURE-IOT-EDGE/PROVIDERS/MICROSOFT.DEVICES/IOTHUBS/IOT-DEMO",
+    "specversion": "1.0",
+    "type": "Microsoft.Devices.DeviceDisconnected",
+    "subject": "devices/edge1/SimulatedTemperatureSensor",
+    "time": "2022-11-07T09:47:01.4991237Z",
+    "data": {
+      "deviceConnectionStateEventInfo": {
+        "sequenceNumber": "000000000000000001D8F268B5BC335E00000002000000000000000000000039"
+      },
+      "hubName": "iot-demo000000010",
+      "deviceId": "edge1",
+      "moduleId": "SimulatedTemperatureSensor"
     }
   }
 ]
