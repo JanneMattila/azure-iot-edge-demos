@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{587D79F9-A00
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "filtermodule", "src\iotedgemodule\modules\filtermodule\filtermodule.csproj", "{28E1724C-25A5-448A-B5F6-8DF9E3932FC6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IotHubFuncApp", "src\IotHubFuncApp\IotHubFuncApp.csproj", "{F77838F4-A9A0-47AB-84A8-57E699D1E51B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +19,17 @@ Global
 		{28E1724C-25A5-448A-B5F6-8DF9E3932FC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28E1724C-25A5-448A-B5F6-8DF9E3932FC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28E1724C-25A5-448A-B5F6-8DF9E3932FC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F77838F4-A9A0-47AB-84A8-57E699D1E51B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F77838F4-A9A0-47AB-84A8-57E699D1E51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F77838F4-A9A0-47AB-84A8-57E699D1E51B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F77838F4-A9A0-47AB-84A8-57E699D1E51B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{28E1724C-25A5-448A-B5F6-8DF9E3932FC6} = {587D79F9-A002-41E4-9C5F-C7FC3BC0FBB4}
+		{F77838F4-A9A0-47AB-84A8-57E699D1E51B} = {587D79F9-A002-41E4-9C5F-C7FC3BC0FBB4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A2F0C2D9-4E26-44CB-89C7-368F69608DDB}
