@@ -17,8 +17,15 @@ subnet_vm_name="snet-vm"
 
 vm_name="vm"
 vm_username="azureuser"
-vm_password=$(openssl rand -base64 32)
-echo "vm_password=$vm_password" > .env
+
+if test -f ".env"; then
+  # Password has been created so load it
+  source .env
+else
+  # Generate password and store it
+  vm_password=$(openssl rand -base64 32)
+  echo "vm_password=$vm_password" > .env
+fi
 
 nsg_name="nsg-vm"
 nsg_rule_ssh_name="ssh-rule"
@@ -46,6 +53,26 @@ iot_hub_json=$(az iot hub create --resource-group $resource_group_name --name $i
 iot_hub_id=$(echo $iot_hub_json | jq -r .id)
 echo $iot_hub_json
 echo $iot_hub_id
+
+cat << EOF > logs.json
+[
+  {
+    "categoryGroup": "allLogs",
+    "enabled": true,
+    "retentionPolicy": {
+      "enabled": false,
+      "days": 0
+    }
+  }
+]
+EOF
+cat logs.json
+az monitor diagnostic-settings create \
+  --name "diag" --resource-group $resource_group_name \
+  --resource $iot_hub_id \
+  --export-to-resource-specific true \
+  --logs '@logs.json' \
+  --workspace $workspace_name
 
 device_identity_json=$(az iot hub device-identity create --device-id $edge_device_id --edge-enabled --hub-name $iot_hub_name -o json)
 echo $device_identity_json
@@ -118,7 +145,7 @@ vm_json=$(az vm create \
   --resource-group $resource_group_name  \
   --name $vm_name \
   --image "Canonical:0001-com-ubuntu-server-focal:20_04-lts:latest" \
-  --size Standard_DS3_v2 \
+  --size Standard_DS1_v2 \
   --admin-username $vm_username \
   --admin-password $vm_password \
   --custom-data cloud-init-updated.txt \
@@ -235,6 +262,15 @@ ls -lF
 sudo iotedge restart SimulatedTemperatureSensor
 sudo iotedge restart edgeAgent
 sudo iotedge restart edgeHub
+
+# WARNING: Blocking network traffic commands!
+# - iptables
+sudo iptables --help
+sudo iptables --list
+
+# - traffic control
+#   https://wiki.linuxfoundation.org/networking/netem#delaying_only_some_traffic
+sudo tc - help
 
 # Exit VM
 exit

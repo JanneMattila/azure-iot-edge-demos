@@ -106,3 +106,5 @@ Example output:
 [Metrics collector module](https://learn.microsoft.com/en-us/azure/iot-edge/how-to-collect-and-transport-metrics?view=iotedge-1.4&tabs=iothub#metrics-collector-module)
 
 - [Access built-in metrics](https://learn.microsoft.com/en-us/azure/iot-edge/how-to-access-built-in-metrics?view=iotedge-1.4)
+
+[Network emulation (netem)](https://wiki.linuxfoundation.org/networking/netem)
