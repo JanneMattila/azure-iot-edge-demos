@@ -16,10 +16,8 @@ public class IotHubFunction
     public void Run([EventHubTrigger("iothub",
             Connection = "EventHubConnectionString",
             ConsumerGroup = "func",
-            IsBatched = true)] string[] events)
+            IsBatched = false)] string eventData)
     {
-        var json = $"[{string.Join(',', events)}]";
-
-        _logger.LogInformation(json);
+        _logger.LogInformation(eventData);
     }
 }
