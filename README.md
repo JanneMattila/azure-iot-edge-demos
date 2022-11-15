@@ -83,6 +83,8 @@ Example output:
 
 ## Links
 
+[Prepare to deploy your IoT Edge solution in production](https://learn.microsoft.com/en-us/azure/iot-edge/production-checklist)
+
 [The IoT Edge OSS project](https://github.com/Azure/iotedge)
 
 - [EnvironmentVariables](https://github.com/Azure/iotedge/blob/main/doc/EnvironmentVariables.md)

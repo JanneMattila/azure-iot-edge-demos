@@ -134,11 +134,16 @@ subnet_vm_id=$(az network vnet subnet create -g $resource_group_name --vnet-name
 echo $subnet_vm_id
 
 # Use cloud init file from:
+daemon_configuration=$(cat daemon.json | jq -c)
+echo $daemon_configuration
 curl -s https://raw.githubusercontent.com/Azure/iotedge-vm-deploy/1.4/cloud-init.txt > cloud-init.txt
 cat cloud-init.txt
 awk "{sub(/{{{dcs}}}/,\"$device_identity_connection_string\"); print}" cloud-init.txt > cloud-init-updated.txt
 echo "  - mkdir -p /iotedge/edgeagent" >> cloud-init-updated.txt
 echo "  - mkdir -p /iotedge/edgehub" >> cloud-init-updated.txt
+echo "  - echo '$daemon_configuration' > /etc/docker/daemon.json" >> cloud-init-updated.txt
+
+jq --help
 cat cloud-init-updated.txt
 
 vm_json=$(az vm create \
