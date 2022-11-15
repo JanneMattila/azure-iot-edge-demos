@@ -13,11 +13,17 @@ public class IotHubFunction
     }
 
     [Function("IotHubFunction")]
-    public void Run([EventHubTrigger("iothub",
+    public void Run(
+        [EventHubTrigger("",
             Connection = "EventHubConnectionString",
             ConsumerGroup = "func",
-            IsBatched = false)] string eventData)
+            IsBatched = false)] string eventData,
+            FunctionContext context)
     {
+        foreach (var item in context.BindingContext.BindingData)
+        {
+            _logger.LogInformation($"{item.Key}: {item.Value}");
+        }
         _logger.LogInformation(eventData);
     }
 }

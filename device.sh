@@ -25,3 +25,5 @@ az iot device send-d2c-message -d $simple_device1_id -n $iot_hub_name \
  --data "$simple_device_payload" \
  --properties "my_identifier=12345;my_alternative_identifier=ABCDE" \
  --msg-count 5
+
+az iot hub monitor-events -n $iot_hub_name

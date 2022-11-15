@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 
 namespace IotHubFuncApp;
+
 public class Program
 {
     public static void Main()
