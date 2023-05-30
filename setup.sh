@@ -2,7 +2,7 @@
 set -a
 
 # All the variables for the deployment
-subscription_name="AzureDev"
+subscription_name="development"
 resource_group_name="rg-azure-iot-edge"
 location="northeurope"
 workspace_name="log-iot"
@@ -143,7 +143,6 @@ echo "  - mkdir -p /iotedge/edgeagent" >> cloud-init-updated.txt
 echo "  - mkdir -p /iotedge/edgehub" >> cloud-init-updated.txt
 echo "  - echo '$daemon_configuration' > /etc/docker/daemon.json" >> cloud-init-updated.txt
 
-jq --help
 cat cloud-init-updated.txt
 
 vm_json=$(az vm create \
